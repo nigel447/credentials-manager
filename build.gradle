@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.50'
+    id "org.openjfx.javafxplugin" version "0.0.8"
+}
+
+group 'krypto-manager'
+version '1'
+
+sourceCompatibility = 1.8
+
+javafx {
+    version = "12.0.2"
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.graphics' ]
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "no.tornado:tornadofx:1.7.19"
+
+    implementation 'log4j:log4j:1.2.17'
+    implementation 'commons-logging:commons-logging:1.2'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.62'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9'
+ 
+
+    testImplementation 'junit:junit:4.12'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
