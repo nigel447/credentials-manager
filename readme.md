@@ -9,7 +9,7 @@ A tool for securing AWS SDK credentials for the (security) paranoid dev
  
 
 ## Summary
-<img src="https://github.com/nigel447/krypto-manager/blob/master/sum1.png" width="400"/>  
+<img src="https://github.com/nigel447/credentials-manager/blob/master/sum1.png" width="400"/>  
 
 
 ### Usage (Video)
