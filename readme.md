@@ -13,4 +13,4 @@ A tool for securing AWS SDK credentials for the (security) paranoid dev
 
 
 ### Usage (Video)
-under construction
+[![Demo](http://img.youtube.com/vi/8Zkuc_3YjNY/0.jpg)](https://www.youtube.com/watch?v=JY6hZobXF0Q "Demo")
