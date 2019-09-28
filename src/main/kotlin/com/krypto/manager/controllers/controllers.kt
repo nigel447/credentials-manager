@@ -14,6 +14,7 @@ import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
@@ -52,6 +53,16 @@ abstract class ControllerBase: Controller() {
         cipher.init(Cipher.ENCRYPT_MODE, key);
         return CipherWithParams(cipher.getIV(), cipher.doFinal(data))
     }
+
+   fun doDeCrypt(key: SecretKey, data: CipherWithParams): ByteArray {
+        val cipher = Cipher.getInstance("AES/CFB/NoPadding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(data.iv))
+        val bytesD = cipher.doFinal(data.data)
+        return bytesD
+    }
+
+
+
 }
 
 class KeyStoreGeneratorController: ControllerBase()  {
@@ -116,6 +127,23 @@ class CognitoGeneratorController: ControllerBase()  {
         AppStore.ENCRYPTED_COGNITO_JSON_WRAP.set( AppArtifacts.objectMapper.writeValueAsString(dataMap))
         return true
 
+    }
+
+
+}
+
+
+class STSCredentialsCheckController: ControllerBase()  {
+
+
+    fun procesEncryptedKeys() {
+        val aResultCP = AppArtifacts.objectMapper.readValue( AppStore.ENCRYPTED_ACCESS.get() , CipherWithParams::class.java )
+        val sResultCP = AppArtifacts.objectMapper.readValue( AppStore.ENCRYPTED_SECRET.get() , CipherWithParams::class.java )
+        val key = getSecretKey( )
+        val accessResult = doDeCrypt(key, aResultCP)
+        val secretResult = doDeCrypt(key, sResultCP)
+        AppStore.DECRYPTED_ACCESS.set(String(accessResult))
+        AppStore.DECRYPTED_SECRET.set(String(secretResult))
     }
 
 

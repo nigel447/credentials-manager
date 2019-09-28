@@ -1,13 +1,13 @@
 package com.krypto.manager.components
 
-import com.krypto.manager.AppArtifacts
-import com.krypto.manager.AppStore
-import com.krypto.manager.ManagerStyle
-import com.krypto.manager.ResetEvent
+import com.amazonaws.services.s3.AmazonS3
+import com.krypto.manager.*
 import com.krypto.manager.controllers.CognitoGeneratorController
 import com.krypto.manager.controllers.CredentialsGeneratorController
 import com.krypto.manager.controllers.KeyStoreGeneratorController
+import com.krypto.manager.controllers.STSCredentialsCheckController
 import javafx.geometry.Orientation
+import javafx.scene.control.Button
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.scene.layout.HBox
@@ -272,4 +272,129 @@ class CognitoGenerator : TabsBase() {
 
         this.visibleProperty().bind(AppStore.ALIAS.isNotEmpty)
     }
+}
+
+class STSCredentialsCheck : TabsBase() {
+
+    private val controller: STSCredentialsCheckController by inject()
+
+    /**
+     * for sts assume role check
+     * not available on local stack
+     */
+    private lateinit var s3: AmazonS3
+
+    private lateinit var createClient: Button
+    private lateinit var runSTSTest: Button
+    private lateinit var runSessionTest: Button
+
+    private val encryptedAccess = model.bind { AppStore.ENCRYPTED_ACCESS }
+    private val encryptedSecret = model.bind { AppStore.ENCRYPTED_SECRET }
+    private val roleArn = model.bind { AppStore.ROLE_ARN }
+
+
+    private lateinit var encryptedAccessFieldset: Fieldset
+    private lateinit var encryptedSecretFieldset: Fieldset
+
+    fun toggleCredInput() {
+        encryptedAccessFieldset.isVisible = false
+        encryptedSecretFieldset.isVisible = false
+        encryptedAccessFieldset.isManaged = false
+        encryptedSecretFieldset.isManaged = false
+    }
+
+    override val root = vbox(20) {
+
+
+        add(hbox(15) {
+            createClient = button("Create STS Session") {
+                enableWhen(model.valid)
+                action {
+                    model.commit()
+                    controller.procesEncryptedKeys()
+                    toggleCredInput()
+                    STSClientSession.initSTS(STSSessionClientProvider.stsSession())
+                    toggleOutPut()
+                    output.text = "Created STS Session OK"
+                    runSTSTest .isVisible = true
+                }
+            }
+
+            runSTSTest = button("Obtain STS Credentials ") {
+                action {
+                    AppStore.STS_TEST_JSON_WRAP.set( assumeRole())
+                    output.text = assumeRole()
+                    output.text = AppStore.STS_TEST_JSON_WRAP.get()
+                    runSessionTest .isVisible = true
+                }
+                isVisible = false
+            }
+            runSessionTest = button("run assume role test ") {
+                action {
+                    if(AppArtifacts.IS_LOCALSTACK) {
+                        output.text = "assume role test not available on local stack"
+                    } else {
+                        output.text = runOperationAsRole()
+                    }
+
+                }
+                isVisible = false
+            }
+            VBox.setMargin(this, insets(10, 0, 0, 20))
+        })
+
+        add(form {
+            encryptedAccessFieldset = fieldset("Enter Encrypted AccessKey:", labelPosition = Orientation.VERTICAL) {
+                passwordfield(encryptedAccess).required()
+            }
+            encryptedSecretFieldset = fieldset("Enter Encrypted SecretKey:", labelPosition = Orientation.VERTICAL) {
+                passwordfield(encryptedSecret).required()
+            }
+
+            fieldset("enter role arn for session", labelPosition = Orientation.HORIZONTAL) {
+
+                textfield(roleArn).required()
+
+            }
+
+        })
+
+        add(copyToClipboard)
+
+        add(outputContainer)
+
+        copyToClipboard.apply {
+            action {
+                setClipboardContent(AppStore.STS_TEST_JSON_WRAP.get())
+            }
+        }
+
+    }
+
+
+    fun assumeRole(): String {
+        var sessionJson = ""
+        val awsCreds = STSClientSession.assumeRole()!!.credentials
+        if (awsCreds != null) {
+            val session = STSClientSession.obtainSTSCredentialsForRole(awsCreds)
+            sessionJson = session.writeToJsonString()
+        }
+        AppArtifacts.appLogger.info("getSession create s3 with ${awsCreds.accessKeyId} ${awsCreds.secretAccessKey}  ${awsCreds.sessionToken} ")
+
+        if(!AppArtifacts.IS_LOCALSTACK) {
+            s3 = STSClientSession.createS3Session(awsCreds)
+        }
+        return sessionJson
+    }
+
+    fun runOperationAsRole(): String {
+        var sessionJson = ""
+        S3TestSetup.initS3(s3)
+        AppArtifacts.appLogger.info("runSession s3 ok ")
+        sessionJson =  S3TestSetup.listBuckets()
+        return sessionJson
+    }
+
+
+
 }

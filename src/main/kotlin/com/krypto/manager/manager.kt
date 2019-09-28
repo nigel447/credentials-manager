@@ -2,10 +2,7 @@ package com.krypto.manager
 
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.krypto.manager.components.CognitoGenerator
-import com.krypto.manager.components.CredentialsGenerator
-import com.krypto.manager.components.Header
-import com.krypto.manager.components.KeyStoreGenerator
+import com.krypto.manager.components.*
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.TabPane
 import javafx.scene.layout.HBox
@@ -25,6 +22,10 @@ object AppArtifacts {
     val appLogger = LogFactory.getLog("krypto-manager")
     val objectMapper = jacksonObjectMapper().registerModule(KotlinModule())
 
+    var IS_LOCALSTACK = true
+    val LOCALSTACK_STS_ENDPOINT = "http://localhost:9010"
+    val STS_SESSION_TEST_NAME =  "role_test"
+
 }
 
 object AppStore {
@@ -42,6 +43,14 @@ object AppStore {
     val COGNITO_POOL_ID = SimpleStringProperty()
     val COGNITO_CLIENT_ID = SimpleStringProperty()
     val ENCRYPTED_COGNITO_JSON_WRAP = SimpleStringProperty()
+
+    val ROLE_ARN = SimpleStringProperty()
+    val ENCRYPTED_ACCESS = SimpleStringProperty()
+    val ENCRYPTED_SECRET = SimpleStringProperty()
+    val DECRYPTED_ACCESS = SimpleStringProperty()
+    val DECRYPTED_SECRET = SimpleStringProperty()
+
+    val STS_TEST_JSON_WRAP = SimpleStringProperty()
 
 
 }
@@ -91,6 +100,10 @@ class ManagerView : View() {
                 add<CognitoGenerator>()
             }
 
+            tab("STS Credentials Check") {
+                add<STSCredentialsCheck>()
+            }
+
         }
     }
 
@@ -110,7 +123,7 @@ class ManagerStyle : Stylesheet() {
         appHeader {
             backgroundColor += c("#00305A")
             fontSize = 16.px
-            minWidth= 100.percent
+            minWidth = 100.percent
 
         }
 
@@ -128,8 +141,8 @@ class ManagerStyle : Stylesheet() {
             textFill = c("white")
             borderColor += box(c("white"))
             borderWidth += box(3.px)
-            minWidth= 100.pc
-            minHeight= 100.pc
+            minWidth = 100.pc
+            minHeight = 100.pc
         }
 
         fieldset {
@@ -165,7 +178,7 @@ class ManagerStyle : Stylesheet() {
         tabPane {
             borderColor += box(c("transparent"))
             backgroundColor += c("#00305A")
-           // backgroundColor += c("#004B8D")
+            // backgroundColor += c("#004B8D")
 
         }
 
@@ -193,19 +206,19 @@ class ManagerStyle : Stylesheet() {
             and(selected) {
                 tabLabel {
                     textFill = c("gold")
-                    focusColor= c("transparent")
-                    faintFocusColor= c("transparent")
+                    focusColor = c("transparent")
+                    faintFocusColor = c("transparent")
                     borderColor += box(c("transparent"))
 
                 }
-                focusColor= c("transparent")
-                faintFocusColor= c("transparent")
+                focusColor = c("transparent")
+                faintFocusColor = c("transparent")
                 backgroundColor += c("#729EBF")
             }
 
             and(focused) {
-                focusColor= c("transparent")
-                faintFocusColor= c("transparent")
+                focusColor = c("transparent")
+                faintFocusColor = c("transparent")
             }
 
             tabLabel {
@@ -222,7 +235,6 @@ class ManagerStyle : Stylesheet() {
         val appHeader by cssclass()
         val outputText by cssclass()
         val appHeaderButton by cssclass()
-
 
 
     }

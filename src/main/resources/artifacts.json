@@ -1,4 +1,4 @@
 {
-  "symKePsswd" : "key password here",
-  "keyStorePasswd" : "key store password here"
+  "symKePsswd" : "some sym key here",
+  "keyStorePasswd" : "some key store psswd here"
 }
