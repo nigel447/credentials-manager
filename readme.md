@@ -17,4 +17,4 @@ A tool for securing AWS SDK credentials for the (security) paranoid dev
 [![Secure Apps ](http://img.youtube.com/vi/jQMj3iY9dz8/0.jpg)](http://www.youtube.com/watch?v=jQMj3iY9dz8 "Secure Apps 1")  
 
 #### STS Credentials Check
-[![Secure Apps ](http://img.youtube.com/vi/jQMj3iY9dz8/0.jpg)](http://www.youtube.com/watch?v=jQMj3iY9dz8 "Secure Apps 2")
+[![Secure Apps ](http://img.youtube.com/vi/aSuSN_ABoaA/0.jpg)](http://www.youtube.com/watch?v=aSuSN_ABoaA "Secure Apps 2")
